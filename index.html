@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CompraFacil Pro</title>
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --primary:#0f172a;--blue:#2563eb;--green:#059669;--red:#dc2626;--amber:#d97706;
+  --soft:#f8fafc;--shadow:0 14px 34px rgba(15,23,42,.08)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;
+  padding:16px max(16px,env(safe-area-inset-left)) max(80px,calc(16px + env(safe-area-inset-bottom))) max(16px,env(safe-area-inset-right));
+  min-height:100vh;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:radial-gradient(circle at 0 0,#dbeafe 0,transparent 28%),radial-gradient(circle at 100% 0,#ccfbf1 0,transparent 23%),var(--bg);
+  color:var(--text);-webkit-font-smoothing:antialiased
+}
+button,input,select{font:inherit;-webkit-appearance:none;appearance:none}
+button{border:0;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.5;cursor:not-allowed}
+.app{max-width:1280px;margin:auto}
+.header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap}
+.header h1{margin:0;font-size:clamp(26px,6vw,50px);line-height:1;letter-spacing:-1.5px}
+.header p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.badge{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:999px;padding:8px 12px;font-weight:700;font-size:12px;white-space:nowrap;align-self:flex-start;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.stat small{display:block;color:var(--muted);font-weight:700;font-size:11px;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.stat strong{font-size:22px;font-weight:800}
+.stat.main{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:0}
+.stat.main small{color:#cbd5e1}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.btn{padding:12px 16px;border-radius:12px;font-weight:700;font-size:14px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .1s}
+.btn:active{transform:scale(.97);opacity:.9}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-light{background:#e8edf4;color:var(--text)}
+.btn-red{background:#fee2e2;color:#991b1b}
+.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}
+.card{background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+.card+.card{margin-top:14px}
+h2{margin:0 0 12px;font-size:18px;font-weight:800}
+.sub{margin:-4px 0 12px;color:var(--muted);font-size:13px;line-height:1.5}
+label{display:block;font-size:12px;font-weight:700;margin:12px 0 5px;text-transform:uppercase;letter-spacing:.04em}
+input,select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none;color:var(--text);font-size:16px;min-height:44px}
+input:focus,select:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.grow{flex:1;min-width:120px}
+.catalog{display:grid;gap:7px;max-height:300px;overflow:auto;-webkit-overflow-scrolling:touch}
+.catalog-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:10px}
+.catalog-item strong{display:block;overflow-wrap:anywhere;font-weight:700}
+.meta{font-size:11px;color:var(--muted);margin-top:3px}
+.icon{width:36px;height:36px;border-radius:8px;font-weight:700;font-size:16px;min-height:36px}
+.edit{background:#dbeafe;color:#1d4ed8}.del{background:#fee2e2;color:#b91c1c}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:860px;background:#fff}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:11px;text-transform:uppercase;color:var(--muted);background:#f8fafc;letter-spacing:.04em;font-weight:700}
+td.product{font-weight:800;min-width:160px}
+td input,td select{padding:9px 10px;font-size:15px}
+.price-cell{font-weight:800;white-space:nowrap}
+.buy-yes{background:#ecfdf5}.buy-no{background:#fff}
+.remove-row{background:#fee2e2;color:#b91c1c;width:36px;height:36px;border-radius:8px;font-weight:700;font-size:16px}
+.mobile-row{display:none}
+.mobile-row-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(15,23,42,.05)}
+.mobile-row-card.buy-yes{border-left:4px solid var(--green);background:#f0fdf4}
+.mobile-row-card.buy-no{border-left:4px solid var(--line)}
+.mrow-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px}
+.mrow-name{font-weight:800;font-size:15px}
+.mrow-source{font-size:11px;color:var(--muted);margin-top:2px}
+.mrow-subtotal{font-weight:800;font-size:17px;color:var(--green);white-space:nowrap}
+.mrow-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mrow-field label{margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.mrow-actions{display:flex;justify-content:flex-end;margin-top:10px}
+.summary{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:2px solid var(--line);padding-top:16px;margin-top:14px;flex-wrap:wrap}
+.summary span{color:var(--muted);font-weight:700}
+.summary strong{font-size:28px;font-weight:800}
+.final-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.status{display:none;margin-top:12px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700}
+.status.show{display:block}
+.ok{background:#d1fae5;color:#065f46}.info{background:#dbeafe;color:#1e40af}.warn{background:#ffedd5;color:#9a3412}
+.empty{border:1px dashed #cbd5e1;background:var(--soft);color:var(--muted);padding:24px 12px;text-align:center;border-radius:12px}
+.history{display:grid;gap:8px}
+.history-item{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.history-item strong{display:block;font-weight:700}
+.history-total{font-weight:900;font-size:17px}
+.small-btn{padding:7px 10px;border-radius:8px;font-size:12px;font-weight:700;margin-top:6px;min-height:36px;cursor:pointer;border:0;display:inline-flex;align-items:center}
+.gram-hint{font-size:11px;color:var(--amber);font-weight:700;margin-top:4px;display:flex;align-items:center;gap:4px}
+.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:16px;padding-bottom:8px}
+@media(max-width:1024px){.layout{grid-template-columns:300px minmax(0,1fr)}}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .header{flex-direction:column;align-items:stretch}
+  .badge{align-self:flex-start}
+}
+@media(max-width:640px){
+  body{padding:12px 12px 90px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .header h1{font-size:28px}
+  .toolbar .btn{flex:1}
+  .two{grid-template-columns:1fr}
+  .table-wrap{display:none}
+  .mobile-row{display:block}
+  .summary strong{font-size:24px}
+  .card{padding:14px}
+}
+@media(max-width:380px){
+  .stats{grid-template-columns:1fr}
+  .stat strong{font-size:18px}
+  .mrow-grid{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff;padding:0}
+  .left,.toolbar,.footer,.history-card,.badge{display:none!important}
+  .layout{display:block}
+  .card,.stat{box-shadow:none;border:0}
+  .stats{grid-template-columns:1fr}
+  .stat:not(.main){display:none}
+  .mobile-row{display:none!important}
+  .table-wrap{display:block!important}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="header">
+    <div>
+      <h1>CompraFacil Pro</h1>
+      <p>Planeje a compra inteira antes de sair: quantidade, kg/g/litros, preco e decisao de comprar ou nao.</p>
+    </div>
+    <div class="badge">Dados salvos automaticamente</div>
+  </header>
+  <section class="stats">
+    <div class="stat main"><small>Total selecionado</small><strong id="statTotal">R$ 0,00</strong></div>
+    <div class="stat"><small>Itens "Sim"</small><strong id="statSelected">0</strong></div>
+    <div class="stat"><small>Compras finalizadas</small><strong id="statHistory">0</strong></div>
+    <div class="stat"><small>Total historico</small><strong id="statHistoryTotal">R$ 0,00</strong></div>
+  </section>
+  <div class="toolbar">
+    <button class="btn btn-primary" id="btnNew">+ Nova compra</button>
+    <button class="btn btn-light" id="btnPrint">Imprimir</button>
+    <button class="btn btn-light" id="btnBackup">Backup</button>
+    <label class="btn btn-light" style="margin:0;cursor:pointer">Restaurar<input type="file" id="restoreFile" accept=".json" hidden></label>
+  </div>
+  <section class="layout">
+    <div class="left">
+      <div class="card">
+        <h2>Cadastrar produto</h2>
+        <p class="sub">Aparecera automaticamente na lista de compras.</p>
+        <label>Nome do produto</label>
+        <input id="catalogName" type="text" placeholder="Ex.: Arroz" autocomplete="off">
+        <div class="two">
+          <div>
+            <label>Unidade padrao</label>
+            <select id="catalogUnit">
+              <option value="unidade">Unidade</option>
+              <option value="kg">Kg</option>
+              <option value="g">Gramas (g)</option>
+              <option value="litro">Litro</option>
+            </select>
+          </div>
+          <div>
+            <label>Preco padrao (opcional)</label>
+            <input id="catalogPrice" type="text" placeholder="Ex: 12,90" inputmode="decimal">
+            <div id="catalogPriceHint" class="gram-hint" style="display:none">Informe o preco por kg</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-blue grow" id="btnSaveCatalog">Salvar produto</button>
+          <button class="btn btn-light" id="btnCancelEdit" style="display:none">Cancelar</button>
+        </div>
+        <div id="status" class="status"></div>
+      </div>
+      <div class="card">
+        <h2>Produtos cadastrados</h2>
+        <input id="catalogSearch" type="search" placeholder="Buscar produto...">
+        <div style="height:10px"></div>
+        <div id="catalogList" class="catalog"></div>
+      </div>
+      <div class="card">
+        <h2>Adicionar produto avulso</h2>
+        <p class="sub">Aparece so nesta compra.</p>
+        <label>Nome</label>
+        <input id="manualName" type="text" placeholder="Ex.: Sabao" autocomplete="off">
+        <div class="two">
+          <div>
+            <label>Unidade</label>
+            <select id="manualUnit">
+              <option value="unidade">Unidade</option>
+              <option value="kg">Kg</option>
+              <option value="g">Gramas (g)</option>
+              <option value="litro">Litro</option>
+            </select>
+          </div>
+          <div>
+            <label>Preco inicial (opcional)</label>
+            <input id="manualPrice" type="text" placeholder="Ex: 12,90" inputmode="decimal">
+            <div id="manualPriceHint" class="gram-hint" style="display:none">Informe o preco por kg</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-green grow" id="btnAddManual">Adicionar a lista</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>Lista da compra</h2>
+        <p class="sub">O total soma somente itens marcados como <strong>"Sim"</strong>.<br>
+          <span style="color:var(--amber);font-weight:700">Gramas: informe a qtd em g e o preco por kg. O subtotal e calculado automaticamente.</span>
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th><th>Comprar?</th><th>Quantidade</th><th>Medida</th><th>Preco unitario</th><th>Subtotal</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="shoppingBody"></tbody>
+          </table>
+        </div>
+        <div class="mobile-row" id="mobileRows"></div>
+        <div class="summary">
+          <span>Total da compra</span>
+          <strong id="grandTotal">R$ 0,00</strong>
+        </div>
+        <div class="final-box">
+          <button class="btn btn-green grow" id="btnFinishYes">Finalizar e salvar compra</button>
+          <button class="btn btn-light" id="btnKeepOpen">Continuar editando</button>
+        </div>
+      </div>
+      <div class="card history-card">
+        <h2>Historico</h2>
+        <p class="sub">As compras finalizadas ficam guardadas neste navegador.</p>
+        <div id="historyList" class="history"></div>
+      </div>
+    </div>
+  </section>
+  <div class="footer">Se voce limpar os dados do navegador, o historico pode ser apagado. Use "Backup" para guardar uma copia.</div>
+</main>
+<script>
+(function() {
+  var $ = function(id) { return document.getElementById(id); };
+  var KEY = "comprafacil_pro_v4";
+  function blank() { return {catalog:[],rows:[],history:[],lastSavedAt:null}; }
+  var state;
+  try { state = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); }
+  catch(e) { state = blank(); }
+  var editingId = null;
+  var money = new Intl.NumberFormat("pt-BR", {style:"currency", currency:"BRL"});
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c];
+    });
+  }
+  // Aceita virgula OU ponto como separador decimal (padrao brasileiro)
+  function parseNum(s) {
+    if(s===null||s===""||s===undefined) return NaN;
+    return parseFloat(String(s).replace(/\./g,"").replace(",","."));
+  }
+  var unitLabel = {unidade:"un.", kg:"kg", g:"g", litro:"L"};
+  function priceLabel(unit) {
+    if(unit==="g") return "R$/kg (ref.)";
+    if(unit==="kg") return "R$/kg";
+    if(unit==="litro") return "R$/L";
+    return "R$/un.";
+  }
+  function save() {
+    state.lastSavedAt = new Date().toISOString();
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+  function setStatus(text, type) {
+    type = type || "info";
+    var el = $("status");
+    el.textContent = text;
+    el.className = "status show " + type;
+  }
+  function clearStatus() {
+    $("status").className = "status";
+    $("status").textContent = "";
+  }
+  function normalizeRows() {
+    var catalogIds = {};
+    state.catalog.forEach(function(p) { catalogIds[p.id] = true; });
+    state.catalog.forEach(function(p) {
+      if(!state.rows.some(function(r) { return r.catalogId === p.id; })) {
+        state.rows.push({id:uid(),catalogId:p.id,name:p.name,source:"preset",buy:"nao",qty:"",unit:p.unit,price:p.defaultPrice!=null?p.defaultPrice:""});
+      }
+    });
+    state.rows = state.rows.filter(function(r) { return r.source !== "preset" || catalogIds[r.catalogId]; });
+    state.rows.forEach(function(r) {
+      if(r.source==="preset") {
+        var p = state.catalog.find(function(x) { return x.id===r.catalogId; });
+        if(p) { r.name=p.name; if(!r.unit) r.unit=p.unit; }
+      }
+    });
+  }
+  function rowSubtotal(r) {
+    if(r.buy!=="sim") return 0;
+    var q=parseNum(r.qty), p=parseNum(r.price);
+    if(!q||q<=0||isNaN(p)||p<0) return 0;
+    return r.unit==="g" ? (q/1000)*p : q*p;
+  }
+  function selectedRows() { return state.rows.filter(function(r){return r.buy==="sim";}); }
+  function total() { return state.rows.reduce(function(s,r){return s+rowSubtotal(r);},0); }
+  function historyTotal() { return state.history.reduce(function(s,h){return s+Number(h.total||0);},0); }
+  function renderStats() {
+    $("statTotal").textContent = money.format(total());
+    $("statSelected").textContent = selectedRows().length;
+    $("statHistory").textContent = state.history.length;
+    $("statHistoryTotal").textContent = money.format(historyTotal());
+    $("grandTotal").textContent = money.format(total());
+  }
+  function renderCatalog() {
+    var term = $("catalogSearch").value.trim().toLowerCase();
+    var items = state.catalog.filter(function(p){return p.name.toLowerCase().indexOf(term)>=0;})
+      .sort(function(a,b){return a.name.localeCompare(b.name,"pt-BR");});
+    if(!items.length) { $("catalogList").innerHTML='<div class="empty">Nenhum produto cadastrado.</div>'; return; }
+    var unitNames = {unidade:"Unidade",kg:"Kg",g:"Gramas (g)",litro:"Litro"};
+    $("catalogList").innerHTML = items.map(function(p) {
+      var priceStr = (p.defaultPrice!==null&&p.defaultPrice!=="") ? " - "+money.format(p.defaultPrice)+(p.unit==="g"?"/kg":"") : "";
+      return '<div class="catalog-item"><div><strong>'+esc(p.name)+'</strong><div class="meta">'+(unitNames[p.unit]||p.unit)+priceStr+'</div></div>'
+        +'<div style="display:flex;gap:6px"><button class="icon edit" data-edit="'+p.id+'" title="Editar">&#9998;</button>'
+        +'<button class="icon del" data-delete="'+p.id+'" title="Excluir">&times;</button></div></div>';
+    }).join("");
+    document.querySelectorAll("[data-edit]").forEach(function(btn){btn.onclick=function(){editCatalog(btn.dataset.edit);};});
+    document.querySelectorAll("[data-delete]").forEach(function(btn){btn.onclick=function(){deleteCatalog(btn.dataset.delete);};});
+  }
+  function updateField(index, field, value) {
+    state.rows[index][field] = value;
+    save();
+    updateRowDisplay(index);
+    renderStats();
+  }
+  function updateRowDisplay(index) {
+    var row = state.rows[index];
+    if(!row) return;
+    var subtotal = money.format(rowSubtotal(row));
+    var tableRow = $("shoppingBody").querySelector('[data-row-index="'+index+'"]');
+    var mobileRow = $("mobileRows").querySelector('[data-row-index="'+index+'"]');
+    if(tableRow) {
+      tableRow.className = row.buy==="sim" ? "buy-yes" : "buy-no";
+      tableRow.querySelector(".price-cell").textContent = subtotal;
+    }
+    if(mobileRow) {
+      mobileRow.className = "mobile-row-card "+(row.buy==="sim" ? "buy-yes" : "buy-no");
+      mobileRow.querySelector(".mrow-subtotal").textContent = subtotal;
+      mobileRow.querySelector(".mrow-field [data-field='price']").previousElementSibling.textContent = priceLabel(row.unit);
+    }
+    [tableRow,mobileRow].forEach(function(container) {
+      if(!container) return;
+      container.querySelectorAll("[data-field]").forEach(function(el) {
+        if(document.activeElement!==el) el.value = row[el.dataset.field];
+        if(el.dataset.field==="price") el.placeholder = priceLabel(row.unit);
+      });
+      var hint = container.querySelector("[data-gram-hint]");
+      if(hint) {
+        hint.style.display = row.unit==="g" ? "flex" : "none";
+        hint.textContent = (row.qty ? (parseNum(row.qty)/1000).toFixed(3) : "0")+"kg x preco/kg";
+      }
+    });
+  }
+  function renderTableRows() {
+    var body = $("shoppingBody");
+    if(!state.rows.length) {
+      body.innerHTML='<tr><td colspan="7"><div class="empty">Cadastre produtos ou adicione um produto avulso.</div></td></tr>';
+      return;
+    }
+    body.innerHTML = state.rows.map(function(r,i) {
+      var gramHint = '<div class="gram-hint" data-gram-hint style="display:'+(r.unit==="g"?"flex":"none")+'">'+(r.qty?(parseNum(r.qty)/1000).toFixed(3):"0")+'kg x preco/kg</div>';
+      return '<tr data-row-index="'+i+'" class="'+(r.buy==="sim"?"buy-yes":"buy-no")+'">'
+        +'<td class="product">'+esc(r.name)+'<div class="meta">'+(r.source==="preset"?"Predefinido":"Avulso")+'</div></td>'
+        +'<td><select data-field="buy" data-index="'+i+'"><option value="nao"'+(r.buy==="nao"?" selected":"")+'>Nao</option><option value="sim"'+(r.buy==="sim"?" selected":"")+'>Sim</option></select></td>'
+        +'<td><input data-field="qty" data-index="'+i+'" type="text" value="'+esc(r.qty)+'" placeholder="0" inputmode="decimal"></td>'
+        +'<td><select data-field="unit" data-index="'+i+'">'
+          +'<option value="unidade"'+(r.unit==="unidade"?" selected":"")+'>Unidade</option>'
+          +'<option value="kg"'+(r.unit==="kg"?" selected":"")+'>Kg</option>'
+          +'<option value="g"'+(r.unit==="g"?" selected":"")+'>Gramas</option>'
+          +'<option value="litro"'+(r.unit==="litro"?" selected":"")+'>Litro</option>'
+        +'</select></td>'
+        +'<td><input data-field="price" data-index="'+i+'" type="text" value="'+esc(r.price)+'" placeholder="'+priceLabel(r.unit)+'" inputmode="decimal">'+gramHint+'</td>'
+        +'<td class="price-cell">'+money.format(rowSubtotal(r))+'</td>'
+        +'<td>'+(r.source==="manual"?'<button class="remove-row" data-remove="'+i+'" title="Remover">&times;</button>':'')+'</td>'
+        +'</tr>';
+    }).join("");
+    document.querySelectorAll("[data-field]").forEach(function(el) {
+      var h=function(){updateField(Number(el.dataset.index),el.dataset.field,el.value);};
+      el.addEventListener("change",h);
+      if(el.tagName==="INPUT") el.addEventListener("input",h);
+    });
+    document.querySelectorAll("[data-remove]").forEach(function(btn){
+      btn.onclick=function(){state.rows.splice(Number(btn.dataset.remove),1);save();renderAll();};
+    });
+  }
+  function renderMobileRows() {
+    var container = $("mobileRows");
+    if(!state.rows.length) { container.innerHTML='<div class="empty">Cadastre produtos ou adicione um produto avulso.</div>'; return; }
+    container.innerHTML = state.rows.map(function(r,i) {
+      var gramHint = '<div class="gram-hint" data-gram-hint style="margin-top:4px;display:'+(r.unit==="g"?"flex":"none")+'">'+(r.qty?(parseNum(r.qty)/1000).toFixed(3):"0")+'kg x preco/kg</div>';
+      return '<div data-row-index="'+i+'" class="mobile-row-card '+(r.buy==="sim"?"buy-yes":"buy-no")+'">'
+        +'<div class="mrow-header"><div><div class="mrow-name">'+esc(r.name)+'</div><div class="mrow-source">'+(r.source==="preset"?"Predefinido":"Avulso")+'</div></div>'
+        +'<div class="mrow-subtotal">'+money.format(rowSubtotal(r))+'</div></div>'
+        +'<div class="mrow-grid">'
+          +'<div class="mrow-field"><label>Comprar?</label><select data-field="buy" data-index="'+i+'">'
+            +'<option value="nao"'+(r.buy==="nao"?" selected":"")+'>Nao</option>'
+            +'<option value="sim"'+(r.buy==="sim"?" selected":"")+'>Sim</option>'
+          +'</select></div>'
+          +'<div class="mrow-field"><label>Medida</label><select data-field="unit" data-index="'+i+'">'
+            +'<option value="unidade"'+(r.unit==="unidade"?" selected":"")+'>Unidade</option>'
+            +'<option value="kg"'+(r.unit==="kg"?" selected":"")+'>Kg</option>'
+            +'<option value="g"'+(r.unit==="g"?" selected":"")+'>Gramas (g)</option>'
+            +'<option value="litro"'+(r.unit==="litro"?" selected":"")+'>Litro</option>'
+          +'</select></div>'
+          +'<div class="mrow-field"><label>Quantidade</label><input data-field="qty" data-index="'+i+'" type="text" value="'+esc(r.qty)+'" placeholder="0" inputmode="decimal"></div>'
+          +'<div class="mrow-field"><label>'+priceLabel(r.unit)+'</label><input data-field="price" data-index="'+i+'" type="text" value="'+esc(r.price)+'" placeholder="R$" inputmode="decimal">'+gramHint+'</div>'
+        +'</div>'
+        +(r.source==="manual"?'<div class="mrow-actions"><button class="btn btn-red small-btn" data-remove="'+i+'" style="font-size:12px;padding:6px 12px">Remover</button></div>':"")
+        +'</div>';
+    }).join("");
+    container.querySelectorAll("[data-field]").forEach(function(el){
+      var h=function(){updateField(Number(el.dataset.index),el.dataset.field,el.value);};
+      el.addEventListener("change",h);
+      if(el.tagName==="INPUT") el.addEventListener("input",h);
+    });
+    container.querySelectorAll("[data-remove]").forEach(function(btn){
+      btn.onclick=function(){state.rows.splice(Number(btn.dataset.remove),1);save();renderAll();};
+    });
+  }
+  function renderRows() {
+    normalizeRows(); renderTableRows(); renderMobileRows(); renderStats();
+  }
+  function saveCatalog() {
+    clearStatus();
+    var name=$("catalogName").value.trim(), unit=$("catalogUnit").value;
+    var rawPrice=$("catalogPrice").value.trim();
+    var defaultPrice=rawPrice===""?"":parseNum(rawPrice);
+    if(!name){setStatus("Digite o nome do produto.","warn");return;}
+    if(defaultPrice!==""&&(isNaN(defaultPrice)||defaultPrice<0)){setStatus("Preco padrao invalido.","warn");return;}
+    if(state.catalog.some(function(p){return p.name.toLowerCase()===name.toLowerCase()&&p.id!==editingId;})){
+      setStatus("Esse produto ja esta cadastrado.","warn");return;
+    }
+    if(editingId) {
+      var p=state.catalog.find(function(x){return x.id===editingId;});
+      if(p){p.name=name;p.unit=unit;p.defaultPrice=defaultPrice;}
+      setStatus("Produto atualizado.","ok");
+    } else {
+      state.catalog.push({id:uid(),name:name,unit:unit,defaultPrice:defaultPrice});
+      setStatus("Produto salvo e adicionado a lista.","ok");
+    }
+    editingId=null;
+    $("catalogName").value="";$("catalogUnit").value="unidade";$("catalogPrice").value="";
+    $("catalogPriceHint").style.display="none";
+    $("btnSaveCatalog").textContent="Salvar produto";$("btnCancelEdit").style.display="none";
+    normalizeRows();save();renderAll();
+  }
+  function editCatalog(id) {
+    var p=state.catalog.find(function(x){return x.id===id;});
+    if(!p) return;
+    editingId=id;
+    $("catalogName").value=p.name;$("catalogUnit").value=p.unit;
+    $("catalogPrice").value=p.defaultPrice!=null?p.defaultPrice:"";
+    $("catalogPriceHint").style.display=p.unit==="g"?"block":"none";
+    $("btnSaveCatalog").textContent="Salvar alteracao";$("btnCancelEdit").style.display="inline-flex";
+    $("catalogName").focus({preventScroll:true});
+  }
+  function cancelEdit() {
+    editingId=null;$("catalogName").value="";$("catalogUnit").value="unidade";$("catalogPrice").value="";
+    $("catalogPriceHint").style.display="none";
+    $("btnSaveCatalog").textContent="Salvar produto";$("btnCancelEdit").style.display="none";
+  }
+  function deleteCatalog(id) {
+    state.catalog=state.catalog.filter(function(p){return p.id!==id;});
+    state.rows=state.rows.filter(function(r){return r.catalogId!==id;});
+    if(editingId===id) cancelEdit();
+    save();renderAll();setStatus("Produto excluido.","info");
+  }
+  function addManual() {
+    clearStatus();
+    var name=$("manualName").value.trim(),unit=$("manualUnit").value;
+    var rawPrice=$("manualPrice").value.trim();
+    var price=rawPrice===""?"":parseNum(rawPrice);
+    if(!name){setStatus("Digite o nome do produto.","warn");return;}
+    state.rows.push({id:uid(),catalogId:null,name:name,source:"manual",buy:"sim",qty:"",unit:unit,price:price});
+    $("manualName").value="";$("manualUnit").value="unidade";$("manualPrice").value="";
+    $("manualPriceHint").style.display="none";
+    save();renderAll();setStatus("Produto avulso adicionado a lista.","ok");
+  }
+  function newPurchase() {
+    normalizeRows();
+    state.rows=state.rows.filter(function(r){return r.source==="preset";}).map(function(r){
+      var p=state.catalog.find(function(x){return x.id===r.catalogId;});
+      return {id:uid(),catalogId:r.catalogId,name:p?p.name:r.name,source:"preset",buy:"nao",qty:"",unit:p?p.unit:r.unit,price:p?(p.defaultPrice!=null?p.defaultPrice:""):""};
+    });
+    save();renderAll();setStatus("Nova compra iniciada.","ok");
+  }
+  function finishPurchase() {
+    var chosen=selectedRows();
+    if(!chosen.length){setStatus("Marque pelo menos um produto como Sim antes de finalizar.","warn");return;}
+    var valid=chosen.filter(function(r){var q=parseNum(r.qty),p=parseNum(r.price);return q>0&&!isNaN(p)&&p>=0;});
+    if(valid.length!==chosen.length){setStatus("Algum item marcado como Sim esta sem quantidade ou preco valido.","warn");return;}
+    var snap={id:uid(),finishedAt:new Date().toISOString(),
+      items:valid.map(function(r){return {name:r.name,qty:parseNum(r.qty),unit:r.unit,price:parseNum(r.price),subtotal:rowSubtotal(r),source:r.source};}),
+      total:total()};
+    state.history.push(snap);save();renderAll();setStatus("Compra finalizada! Total: "+money.format(snap.total)+".","ok");
+  }
+  function formatItemLine(i) {
+    if(i.unit==="g") return i.name+" - "+i.qty+"g x "+money.format(i.price)+"/kg = "+money.format(i.subtotal);
+    return i.name+" - "+i.qty+" "+(unitLabel[i.unit]||i.unit)+" x "+money.format(i.price)+" = "+money.format(i.subtotal);
+  }
+  function renderHistory() {
+    if(!state.history.length){$("historyList").innerHTML='<div class="empty">Nenhuma compra finalizada ainda.</div>';return;}
+    $("historyList").innerHTML=state.history.slice().reverse().map(function(h){
+      return '<div class="history-item"><div><strong>'+new Date(h.finishedAt).toLocaleString("pt-BR")+'</strong>'
+        +'<div class="meta">'+h.items.length+(h.items.length===1?" item":" itens")+'</div>'
+        +'<button class="small-btn btn-light" data-view="'+h.id+'">Ver itens</button> '
+        +'<button class="small-btn btn-red" data-history-delete="'+h.id+'">Excluir</button></div>'
+        +'<div class="history-total">'+money.format(h.total)+'</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-view]").forEach(function(btn){
+      btn.onclick=function(){
+        var h=state.history.find(function(x){return x.id===btn.dataset.view;});
+        if(!h) return;
+        alert(new Date(h.finishedAt).toLocaleString("pt-BR")+"\n\n"+h.items.map(formatItemLine).join("\n")+"\n\nTOTAL: "+money.format(h.total));
+      };
+    });
+    document.querySelectorAll("[data-history-delete]").forEach(function(btn){
+      btn.onclick=function(){state.history=state.history.filter(function(h){return h.id!==btn.dataset.historyDelete;});save();renderAll();};
+    });
+  }
+  function backup() {
+    save();
+    var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    var url=URL.createObjectURL(blob);var a=document.createElement("a");
+    a.href=url;a.download="comprafacil-backup-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }
+  function restore(file) {
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var parsed=JSON.parse(reader.result);
+        if(!Array.isArray(parsed.catalog)||!Array.isArray(parsed.rows)||!Array.isArray(parsed.history)) throw new Error();
+        state=Object.assign(blank(),parsed);normalizeRows();save();renderAll();setStatus("Backup restaurado com sucesso.","ok");
+      }catch(e){setStatus("Nao foi possivel restaurar esse arquivo.","warn");}
+      $("restoreFile").value="";
+    };
+    reader.readAsText(file);
+  }
+  function renderAll(){
+    var scrollY = window.scrollY;
+    var scrollContainers = Array.prototype.map.call(
+      document.querySelectorAll(".catalog,.table-wrap"),
+      function(el) { return {element:el,top:el.scrollTop,left:el.scrollLeft}; }
+    );
+    normalizeRows();renderCatalog();renderRows();renderHistory();renderStats();
+    window.scrollTo(window.scrollX,scrollY);
+    scrollContainers.forEach(function(item) {
+      item.element.scrollTop = item.top;
+      item.element.scrollLeft = item.left;
+    });
+  }
+  $("catalogUnit").addEventListener("change",function(){$("catalogPriceHint").style.display=$("catalogUnit").value==="g"?"block":"none";});
+  $("manualUnit").addEventListener("change",function(){$("manualPriceHint").style.display=$("manualUnit").value==="g"?"block":"none";});
+  $("btnSaveCatalog").onclick=saveCatalog;$("btnCancelEdit").onclick=cancelEdit;$("btnAddManual").onclick=addManual;
+  $("catalogSearch").oninput=renderCatalog;$("btnNew").onclick=newPurchase;$("btnFinishYes").onclick=finishPurchase;
+  $("btnKeepOpen").onclick=function(){setStatus("Compra mantida aberta. Continue preenchendo.","info");};
+  $("btnPrint").onclick=function(){window.print();};$("btnBackup").onclick=backup;
+  $("restoreFile").onchange=function(e){if(e.target.files&&e.target.files[0])restore(e.target.files[0]);};
+  ["catalogName","catalogPrice"].forEach(function(id){$(id).addEventListener("keydown",function(e){if(e.key==="Enter")saveCatalog();});});
+  $("manualName").addEventListener("keydown",function(e){if(e.key==="Enter")addManual();});
+  normalizeRows();save();renderAll();
+}());
+</script>
+</body>
+</html>
