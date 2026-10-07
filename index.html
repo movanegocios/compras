@@ -50,8 +50,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 h2{margin:0 0 12px;font-size:18px;font-weight:800}
 .sub{margin:-4px 0 12px;color:var(--muted);font-size:13px;line-height:1.5}
 label{display:block;font-size:12px;font-weight:700;margin:12px 0 5px;text-transform:uppercase;letter-spacing:.04em}
-input,select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none;color:var(--text);font-size:16px;min-height:44px}
+input,select,textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none;color:var(--text);font-size:16px;min-height:44px}
 input:focus,select:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+textarea{resize:vertical;min-height:140px;line-height:1.5}
+textarea:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .grow{flex:1;min-width:120px}
@@ -186,6 +188,14 @@ td input,td select{padding:9px 10px;font-size:15px}
         <input id="catalogSearch" type="search" placeholder="Buscar produto...">
         <div style="height:10px"></div>
         <div id="catalogList" class="catalog"></div>
+      </div>
+      <div class="card">
+        <h2>Importar lista de produtos</h2>
+        <p class="sub">Cole ou digite um produto por linha. A lista será adicionada à compra atual.</p>
+        <textarea id="bulkProducts" rows="8" placeholder="1 Arroz 5k Camil&#10;3 café pilão&#10;300 Mussarela&#10;1 kilo acém moído"></textarea>
+        <div class="actions">
+          <button class="btn btn-blue grow" id="btnImportProducts">Adicionar lista à compra</button>
+        </div>
       </div>
       <div class="card">
         <h2>Adicionar produto avulso</h2>
@@ -496,6 +506,48 @@ td input,td select{padding:9px 10px;font-size:15px}
     $("manualPriceHint").style.display="none";
     save();renderAll();setStatus("Produto avulso adicionado a lista.","ok");
   }
+  function parseProductLine(line) {
+    var text = line.trim().replace(/^(?:[-*•]\s*)/, "");
+    if(!text) return null;
+    var quantity = 1, unit = "unidade";
+    var match = text.match(/^(\d+(?:[.,]\d+)?)\s*\.?\s*(.*)$/);
+    if(match) {
+      quantity = Number(match[1].replace(",", "."));
+      text = match[2].trim();
+    }
+    var unitMatch = text.match(/^(kg|kilos?|quilos?|quilogramas?|g|gramas?|ml|mililitros?|litros?|l|unidades?|un\.?)(?=\s|$)\s*/i);
+    if(unitMatch) {
+      var token = unitMatch[1].toLowerCase();
+      if(/^(kg|kilos?|quilos?|quilogramas?)$/.test(token)) unit = "kg";
+      else if(/^(g|gramas?)$/.test(token)) unit = "g";
+      else if(/^(ml|mililitros?|litros?|l)$/.test(token)) unit = "litro";
+      else unit = "unidade";
+      text = text.slice(unitMatch[0].length).trim();
+    } else if(quantity===200 || quantity===300) {
+      unit = "g";
+    }
+    if(!text) return null;
+    return {name:text,qty:String(quantity),unit:unit};
+  }
+  function importProducts() {
+    var lines = $("bulkProducts").value.split(/\r?\n/);
+    var imported = [];
+    lines.forEach(function(line) {
+      var item = parseProductLine(line);
+      if(item) imported.push({
+        id:uid(),catalogId:null,name:item.name,source:"manual",buy:"sim",
+        qty:item.qty,unit:item.unit,price:""
+      });
+    });
+    if(!imported.length) {
+      setStatus("Digite pelo menos um produto, um por linha.","warn");
+      return;
+    }
+    state.rows = state.rows.concat(imported);
+    $("bulkProducts").value = "";
+    save();renderAll();
+    setStatus(imported.length+" produto(s) adicionado(s) à compra. Informe os preços antes de finalizar.","ok");
+  }
   function newPurchase() {
     normalizeRows();
     state.rows=state.rows.filter(function(r){return r.source==="preset";}).map(function(r){
@@ -573,6 +625,7 @@ td input,td select{padding:9px 10px;font-size:15px}
   $("catalogUnit").addEventListener("change",function(){$("catalogPriceHint").style.display=$("catalogUnit").value==="g"?"block":"none";});
   $("manualUnit").addEventListener("change",function(){$("manualPriceHint").style.display=$("manualUnit").value==="g"?"block":"none";});
   $("btnSaveCatalog").onclick=saveCatalog;$("btnCancelEdit").onclick=cancelEdit;$("btnAddManual").onclick=addManual;
+  $("btnImportProducts").onclick=importProducts;
   $("catalogSearch").oninput=renderCatalog;$("btnNew").onclick=newPurchase;$("btnFinishYes").onclick=finishPurchase;
   $("btnKeepOpen").onclick=function(){setStatus("Compra mantida aberta. Continue preenchendo.","info");};
   $("btnPrint").onclick=function(){window.print();};$("btnBackup").onclick=backup;
